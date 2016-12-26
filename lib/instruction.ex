@@ -57,6 +57,15 @@ defmodule Instruction do
     {Map.merge(state, %{ip: state[:ip] + 1}), prgm}
   end
 
+  # Optimizer generated instructions
+  def execute({:add, {{:register, src}, {:register, dest}}}, state, prgm) do
+    {Map.merge(state, %{:ip => state[:ip] + 1, dest => state[dest] + state[src]}), prgm}
+  end
+
+  def execute({:nop}, state, prgm) do
+    {Map.merge(state, %{ip: state[:ip] + 1}), prgm}
+  end
+
   defp parse_arguments(str) do
     String.split(str, ~r/\s+/)
     |> Enum.map(&Operand.parse(&1))

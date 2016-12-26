@@ -27,4 +27,13 @@ defmodule ComputerTest do
 
     assert a == 12762
   end
+
+  test "day23 part2" do
+    prgm = Program.load("day23.input.txt")
+    a = Computer.new(prgm, %{a: 12, b: 0, c: 0, d: 0})
+    |> Computer.run
+    |> Computer.register(:a)
+
+    assert a == 479009322
+  end
 end

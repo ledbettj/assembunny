@@ -1,4 +1,6 @@
 defmodule Computer do
+  require Logger
+
   def new(src, state) do
     optimized = Program.optimize(src)
     %{program: optimized, src: src, state: Map.merge(state, %{ip: 0})}
@@ -7,8 +9,10 @@ defmodule Computer do
   def step(computer = %{program: prgm, src: src, state: state}) do
     instr = current_instruction(computer)
     {state, new_src} = Instruction.execute(instr, state, src)
+    # if the instruction modified the source (tgl),
+    # rengerated the new optimized code.
     {prgm, src} = if src != new_src do
-      IO.puts("#{inspect(instr)} modified src -- regenerating program")
+      Logger.info("#{inspect(instr)} modified source, re-optimizing...")
       {new_src, Program.optimize(new_src)}
     else
       {prgm, src}
