@@ -3,10 +3,10 @@ defmodule Computer do
     %{program: prgm, state: Map.merge(state, %{ip: 0})}
   end
 
-  def step(computer = %{program: pgrm, state: state}) do
-    state = current_instruction(computer) |> Instruction.execute(state)
+  def step(computer = %{program: prgm, state: state}) do
+    {state, prgm} = current_instruction(computer) |> Instruction.execute(state, prgm)
 
-    %{program: pgrm, state: state}
+    %{program: prgm, state: state}
   end
 
   def register(%{state: state}, which) do
@@ -17,8 +17,8 @@ defmodule Computer do
     if halted?(computer), do: computer, else: step(computer) |> run
   end
 
-  def halted?(%{program: pgrm, state: state}) do
-    state[:ip] >= length(pgrm)
+  def halted?(%{program: prgm, state: state}) do
+    state[:ip] >= length(prgm)
   end
 
   defp current_instruction(%{program: prgm, state: state}) do
