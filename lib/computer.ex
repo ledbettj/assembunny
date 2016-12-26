@@ -4,7 +4,7 @@ defmodule Computer do
   # Create a new Computer to run the given program source.
   def new(src, state) do
     optimized = Program.optimize(src)
-    %{program: optimized, src: src, state: Map.merge(state, %{ip: 0})}
+    %{program: optimized, src: src, state: Map.merge(state, %{ip: 0, seq: []})}
   end
 
   # Execute a single instruction from the program
@@ -29,9 +29,22 @@ defmodule Computer do
     state[which]
   end
 
+  def signal(%{state: state}) do
+    Enum.reverse(state[:seq])
+  end
+
   # Execute the program until it halts
   def run(computer) do
     if halted?(computer), do: computer, else: step(computer) |> run
+  end
+
+  # Execute the program until it halts or func returns true
+  def run_until(computer, func) do
+    if halted?(computer) || func.(computer) do
+      computer
+    else
+      step(computer) |> run_until(func)
+    end
   end
 
   # Check if the program is halted

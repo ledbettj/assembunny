@@ -23,6 +23,15 @@ defmodule Instruction do
     {:tgl, Operand.parse(rest)}
   end
 
+  def parse("out " <> rest) do
+    {:out, Operand.parse(rest)}
+  end
+
+  def execute({:out, src}, state, prgm) do
+    seq = [Operand.value(src, state) | state[:seq]]
+    {Map.merge(state, %{ip: state[:ip] + 1, seq: seq}), prgm}
+  end
+
   # Execute functions,  For executing a single instruction against state and program source.
   def execute({:inc, {:register, r}}, state, prgm) do
     {Map.merge(state, %{:ip => state[:ip] + 1, r => state[r] + 1}), prgm}
