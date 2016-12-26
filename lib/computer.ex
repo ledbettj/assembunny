@@ -4,13 +4,12 @@ defmodule Computer do
   # Create a new Computer to run the given program source.
   def new(src, state) do
     optimized = Program.optimize(src)
-    %{program: optimized, src: src, state: Map.merge(state, %{ip: 0, seq: []})}
+    %{program: optimized, src: src, state: Map.merge(state, %{ip: 0, out: []})}
   end
 
   # Execute a single instruction from the program
   def step(computer = %{program: prgm, src: src, state: state}) do
     instr = current_instruction(computer)
-    # Logger.debug("#{inspect(state)} - #{inspect(instr)}")
     {state, new_src} = Instruction.execute(instr, state, src)
     # if the instruction modified the source (tgl),
     # rengerated the new optimized code.
@@ -29,8 +28,8 @@ defmodule Computer do
     state[which]
   end
 
-  def signal(%{state: state}) do
-    Enum.reverse(state[:seq])
+  def output(%{state: state}) do
+    Enum.reverse(state[:out])
   end
 
   # Execute the program until it halts

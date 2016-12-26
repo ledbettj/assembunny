@@ -1,24 +1,15 @@
 # Asmbunny
 
-**TODO: Add description**
+This is an elixir implementation of the Assembunny assembly code from
+2016 Advent of Code.
 
-## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
+## Usage
 
-  1. Add `asmbunny` to your list of dependencies in `mix.exs`:
+```elixir
+p = Program.load("code.asb")
+c = Computer.new(p, %{a: 0, b: 0, c: 0, d: 0}) |> Computer.run
+IO.puts("a is #{Computer.register(c, :a)}")
+```
 
-    ```elixir
-    def deps do
-      [{:asmbunny, "~> 0.1.0"}]
-    end
-    ```
-
-  2. Ensure `asmbunny` is started before your application:
-
-    ```elixir
-    def application do
-      [applications: [:asmbunny]]
-    end
-    ```
 

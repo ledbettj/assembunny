@@ -28,6 +28,7 @@ defmodule ComputerTest do
     assert a == 12762
   end
 
+  @tag timeout: 240000
   test "day23 part2" do
     prgm = Program.load("day23.input.txt")
     a = Computer.new(prgm, %{a: 12, b: 0, c: 0, d: 0})
@@ -42,9 +43,9 @@ defmodule ComputerTest do
     prgm = Program.load("day25.input.txt")
     a = Enum.find(0..100000, fn(i) ->
       c = Computer.new(prgm, %{a: i, b: 0, c: 0, d: 0})
-      |> Computer.run_until(fn(c) -> length(Computer.signal(c)) == 10 end)
+      |> Computer.run_until(fn(c) -> length(Computer.output(c)) == 10 end)
 
-      if Computer.signal(c) == [0,1,0,1,0,1,0,1,0,1], do: i, else: false
+      if Computer.output(c) == [0,1,0,1,0,1,0,1,0,1], do: i, else: false
     end)
 
     assert a == 198

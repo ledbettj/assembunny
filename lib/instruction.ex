@@ -1,5 +1,4 @@
 defmodule Instruction do
-  require Logger
   use Instruction.Toggleable
 
   # Parse functions,  For creating instructions from a line of text.
@@ -27,12 +26,24 @@ defmodule Instruction do
     {:out, Operand.parse(rest)}
   end
 
-  def execute({:out, src}, state, prgm) do
-    seq = [Operand.value(src, state) | state[:seq]]
-    {Map.merge(state, %{ip: state[:ip] + 1, seq: seq}), prgm}
+  def parse("add " <> rest) do
+    {:add, parse_arguments(rest)}
+  end
+
+  def parse("mul " <> rest) do
+    {:mul, parse_arguments(rest)}
+  end
+
+  def parse("nop") do
+    {:nop}
   end
 
   # Execute functions,  For executing a single instruction against state and program source.
+  def execute({:out, src}, state, prgm) do
+    seq = [Operand.value(src, state) | state[:out]]
+    {Map.merge(state, %{ip: state[:ip] + 1, out: seq}), prgm}
+  end
+
   def execute({:inc, {:register, r}}, state, prgm) do
     {Map.merge(state, %{:ip => state[:ip] + 1, r => state[r] + 1}), prgm}
   end
@@ -74,7 +85,6 @@ defmodule Instruction do
   end
 
   def execute({:mul, {{:register, src}, {:register, dest}}}, state, prgm) do
-    Logger.debug("executing optimized MUL statement")
     {Map.merge(state, %{:ip => state[:ip] + 1, dest => state[dest] * state[src]}), prgm}
   end
 
