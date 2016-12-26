@@ -1,12 +1,20 @@
 defmodule Computer do
-  def new(prgm, state) do
-    %{program: prgm, state: Map.merge(state, %{ip: 0})}
+  def new(src, state) do
+    optimized = Program.optimize(src)
+    %{program: optimized, src: src, state: Map.merge(state, %{ip: 0})}
   end
 
-  def step(computer = %{program: prgm, state: state}) do
-    {state, prgm} = current_instruction(computer) |> Instruction.execute(state, prgm)
+  def step(computer = %{program: prgm, src: src, state: state}) do
+    instr = current_instruction(computer)
+    {state, new_src} = Instruction.execute(instr, state, src)
+    {prgm, src} = if src != new_src do
+      IO.puts("#{inspect(instr)} modified src -- regenerating program")
+      {new_src, Program.optimize(new_src)}
+    else
+      {prgm, src}
+    end
 
-    %{program: prgm, state: state}
+    %{program: prgm, src: src, state: state}
   end
 
   def register(%{state: state}, which) do
