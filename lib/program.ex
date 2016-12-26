@@ -1,16 +1,20 @@
 defmodule Program do
   require Logger
 
+  # read a file and generate a program from it.
   def load(filename) do
     {:ok, text} = File.read(filename)
     parse(text)
   end
 
+  # read a text blob and generate a program from it.
   def parse(text) do
     String.split(text, "\n", trim: true)
     |> Enum.map(&Instruction.parse(&1))
   end
 
+  # given an input program, make optimization passes on it until
+  # we find nothing left to optimize
   def optimize(prgm) do
     orig = prgm
     prgm = find_optimizations(prgm) |> apply_optimizations(prgm)
@@ -18,15 +22,18 @@ defmodule Program do
     if prgm == orig, do: prgm, else: optimize(prgm)
   end
 
+  # base case, noop.
   defp apply_optimizations([], prgm) do
     prgm
   end
 
+  # apply all optimizations
   defp apply_optimizations([opt | rest], prgm) do
     prgm = apply_optimization(opt, prgm)
     apply_optimizations(rest, prgm)
   end
 
+  # replace the instructions at [index, len] with seq
   defp apply_optimization({index, seq}, prgm) do
     seq_len = length(seq)
     {head, tail} = Enum.split(prgm, index)

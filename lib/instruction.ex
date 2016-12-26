@@ -2,6 +2,7 @@ defmodule Instruction do
   require Logger
   use Instruction.Toggleable
 
+  # Parse functions,  For creating instructions from a line of text.
   def parse("inc " <> register) do
     {:inc, {:register, String.to_atom(register)}}
   end
@@ -22,7 +23,7 @@ defmodule Instruction do
     {:tgl, Operand.parse(rest)}
   end
 
-
+  # Execute functions,  For executing a single instruction against state and program source.
   def execute({:inc, {:register, r}}, state, prgm) do
     {Map.merge(state, %{:ip => state[:ip] + 1, r => state[r] + 1}), prgm}
   end
@@ -58,7 +59,7 @@ defmodule Instruction do
     {Map.merge(state, %{ip: state[:ip] + 1}), prgm}
   end
 
-  # Optimizer generated instructions
+  # Optimizer generated instructions.
   def execute({:add, {{:register, src}, {:register, dest}}}, state, prgm) do
     {Map.merge(state, %{:ip => state[:ip] + 1, dest => state[dest] + state[src]}), prgm}
   end
@@ -72,6 +73,7 @@ defmodule Instruction do
     {Map.merge(state, %{ip: state[:ip] + 1}), prgm}
   end
 
+  # Parse "a 12" into {{:register :a}, {:value, 12}}
   defp parse_arguments(str) do
     String.split(str, ~r/\s+/)
     |> Enum.map(&Operand.parse(&1))

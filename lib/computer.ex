@@ -1,13 +1,16 @@
 defmodule Computer do
   require Logger
 
+  # Create a new Computer to run the given program source.
   def new(src, state) do
     optimized = Program.optimize(src)
     %{program: optimized, src: src, state: Map.merge(state, %{ip: 0})}
   end
 
+  # Execute a single instruction from the program
   def step(computer = %{program: prgm, src: src, state: state}) do
     instr = current_instruction(computer)
+    # Logger.debug("#{inspect(state)} - #{inspect(instr)}")
     {state, new_src} = Instruction.execute(instr, state, src)
     # if the instruction modified the source (tgl),
     # rengerated the new optimized code.
@@ -21,18 +24,22 @@ defmodule Computer do
     %{program: prgm, src: src, state: state}
   end
 
+  # Return the value of a given register
   def register(%{state: state}, which) do
     state[which]
   end
 
+  # Execute the program until it halts
   def run(computer) do
     if halted?(computer), do: computer, else: step(computer) |> run
   end
 
+  # Check if the program is halted
   def halted?(%{program: prgm, state: state}) do
     state[:ip] >= length(prgm)
   end
 
+  # Return the next instruction to execute, pointed to by the Instruction Pointer
   defp current_instruction(%{program: prgm, state: state}) do
     Enum.at(prgm, state[:ip])
   end
