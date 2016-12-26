@@ -1,4 +1,5 @@
 defmodule Instruction do
+  require Logger
   use Instruction.Toggleable
 
   def parse("inc " <> register) do
@@ -60,6 +61,11 @@ defmodule Instruction do
   # Optimizer generated instructions
   def execute({:add, {{:register, src}, {:register, dest}}}, state, prgm) do
     {Map.merge(state, %{:ip => state[:ip] + 1, dest => state[dest] + state[src]}), prgm}
+  end
+
+  def execute({:mul, {{:register, src}, {:register, dest}}}, state, prgm) do
+    Logger.debug("executing optimized MUL statement")
+    {Map.merge(state, %{:ip => state[:ip] + 1, dest => state[dest] * state[src]}), prgm}
   end
 
   def execute({:nop}, state, prgm) do

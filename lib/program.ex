@@ -35,10 +35,16 @@ defmodule Program do
   end
 
   defp find_optimizations(prgm) do
-    Enum.chunk(prgm, 3, 1)
+    adds = Enum.chunk(prgm, 3, 1)
     |> Enum.with_index
     |> Enum.reduce([], &find_optimization(&1, &2))
     |> Enum.reverse
+    muls = Enum.chunk(prgm, 6, 1)
+    |> Enum.with_index
+    |> Enum.reduce([], &find_optimization(&1, &2))
+    |> Enum.reverse
+
+    muls ++ adds
   end
 
   defp find_optimization({instrs, index}, found) do
@@ -55,32 +61,31 @@ defmodule Program do
       [{:dec, {:register, b}}, {:inc, {:register, a}}, {:jnz, {{:register, b}, {:value, -2}}}] ->
         Logger.debug("found add optimization #{a} += #{b} at #{index}")
         [{index, [{:nop}, {:add, {{:register, b}, {:register, a}}}, {:cpy, {{:value, 0}, {:register, b}}}]} | found ]
-      # cpy 0 a
-      # cpy b c
-      # nop
-      # nop
-      # add c a   => a = b * d
-      # dec d
+      #              nop
+      # cpy b c      nop
+      # nop          cpy b a
+      # add c a   => mul d a
+      # cpy 0 c      cpy 0 c
+      # dec d        cpy 0 d
       # jnz d -5
-        # [{:cpy, {{:value, 0}, {:register, a}}},
-        #  {:cpy, {{:register, b}, {:register, c}}},
-        #  {:nop},
-        #  {:nop},
-        #  {:add, {{:register, c}, {:register, a}}},
-        #  {:dec, {:register, d}},
-        #  {:jnz {{:register, d}, {:value, -5}}}] ->
-        # [{index,
-        #   [
-        #     {:nop},
-        #     {:nop},
-        #     {:nop},
-        #     {:nop},
-        #     {:nop},
-        #     {:nop},
-        #     {:mul {{:register, b}, {:register, d}, {:register, a}}}]
-        #  | found ]
-      _ ->
-        found
+      [{:cpy, {{:register, b}, {:register, c}}},
+       {:nop},
+       {:add, {{:register, c}, {:register, a}}},
+       {:cpy, {{:value, 0}, {:register, c}}},
+       {:dec, {:register, d}},
+       {:jnz, {{:register, d}, {:value, -5}}}] ->
+        Logger.debug("found MUL optimization #{a} = #{b} * #{d} at #{index}")
+        [{index,
+          [
+            {:nop},
+            {:nop},
+            {:cpy, {{:register, b}, {:register, a}}},
+            {:mul, {{:register, d}, {:register, a}}},
+            {:cpy, {{:value, 0}, {:register, c}}},
+            {:cpy, {{:value, 0}, {:register, d}}}
+          ]}
+         | found ]
+      _ -> found
     end
   end
 end
